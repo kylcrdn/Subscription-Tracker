@@ -6,11 +6,11 @@ function App() {
   const [subscriptions, setSubscriptions] = useState([
     {
       id: 1,
-      name: "American Express",
-      logo: "AE",
-      dueDate: "Due in 7 days",
+      name: "Amazon",
+      logo: "A",
+      dueDate: "Vence en 7 días",
       price: "€12.00",
-      billing: "Monthly",
+      billing: "Mensual",
     },
   ]);
 
@@ -29,9 +29,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-black p-6">
+      <h1 className="text-white text-2xl font-bold mb-6">Mis Suscripciones</h1>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-white text-2xl font-bold mb-6">My Subscriptions</h1>
-
         <div className="space-y-3">
           {subscriptions.map((subscription) => (
             <SubscriptionCard
