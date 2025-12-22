@@ -6,25 +6,29 @@ import {
 import { useAuth } from "../../../contexts/authContext";
 
 export default function RegisterPage() {
+  // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [userLoggedIn, setUserLoggedIn] = useState(false);
 
-  // Simulate registration with error handling
+  // Get auth state from context
+  const { userLoggedIn } = useAuth();
+
+  // IMPLEMENT NAVIGATION USING useEffect
+
   const onSubmit = async (e) => {
     e.preventDefault();
     console.log("Attempting to register with:", { email });
 
-    // Validate passwords match
+    // Validation
     if (password !== confirmPassword) {
       setErrorMessage("Passwords do not match");
       return;
     }
 
-    // Validate password length
+    // Set password length
     if (password.length < 6) {
       setErrorMessage("Password must be at least 6 characters");
       return;
@@ -38,11 +42,6 @@ export default function RegisterPage() {
         const result = await doCreateUserWithEmailAndPassword(email, password);
         console.log("Registration successful!", result);
         console.log("Email:", email);
-        setUserLoggedIn(true); // Show success message
-        // Optional: Reset form
-        // setEmail("");
-        // setPassword("");
-        // setConfirmPassword("");
       } catch (err) {
         console.error("Registration failed:", err);
         console.error("Error message:", err.message);
@@ -54,8 +53,8 @@ export default function RegisterPage() {
     }
   };
 
-  // Simulate Google sign-in
-  const onGoogleSignIn = (e) => {
+  // Google sign-in
+  const onGoogleSignIn = async (e) => {
     e.preventDefault();
     console.log("Attempting to register with Google");
 
@@ -63,16 +62,18 @@ export default function RegisterPage() {
       setIsRegistering(true);
       setErrorMessage("");
 
-      doSignInWithGoogle()
-        .then((result) => {
-          console.log("Google sign-in successful!", result);
-        })
-        .catch((err) => {
-          console.error("Google sign-in failed:", err);
-          console.error("Error message:", err.message);
-          console.error("Error code:", err.code);
-          setErrorMessage(err.message || "Failed to sign in with Google.");
-        });
+      try {
+        await doSignInWithGoogle();
+      } catch (error) {
+        let message = "Failed to sign in with Google";
+
+        if (error.code === "auth/popup-close-by-user") {
+          message = "Sign-in is cancelled.";
+        }
+
+        setErrorMessage(message);
+        setIsRegistering(false);
+      }
     }
   };
 
@@ -97,13 +98,6 @@ export default function RegisterPage() {
           {errorMessage && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
               {errorMessage}
-            </div>
-          )}
-
-          {/* Success message when logged in */}
-          {userLoggedIn && (
-            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400 text-sm">
-              Successfully registered!
             </div>
           )}
 

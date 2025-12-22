@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   doSignInWithEmailAndPassword,
   doSignInWithGoogle,
@@ -6,15 +6,16 @@ import {
 import { useAuth } from "../../../contexts/authContext";
 
 export default function LoginPage() {
-  const { userLoggedIn } = useAuth();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Get auth state from context
+  const { userLoggedIn } = useAuth();
+
   // Check if user is logged in
-  React.useEffect(() => {
+  useEffect(() => {
     console.log("User logged in status:", userLoggedIn);
     if (userLoggedIn) {
       console.log("User is now logged in! Redirect to home would happen here.");
@@ -31,41 +32,57 @@ export default function LoginPage() {
       setErrorMessage(""); // Clear previous errors
 
       try {
-        const result = await doSignInWithEmailAndPassword(email, password);
-        console.log("Sign-in successful!", result);
-        console.log("Email:", email);
-      } catch (err) {
-        console.error("Sign-in failed:", err);
-        console.error("Error message:", err.message);
-        console.error("Error code:", err.code);
-        setErrorMessage(
-          err.message || "Failed to sign in. Please check your credentials."
-        );
+        await doSignInWithEmailAndPassword(email, password);
+      } catch (error) {
+        // Handle specific Firebase error codes
+        let message = "Failed to sign in. Please try again.";
+
+        if (error.code === "auth/user-not-found") {
+          message = "No account found with this email.";
+        } else if (error.code === "auth/wrong-password") {
+          message = "Incorrect password.";
+        } else if (error.code === "auth/invalid-email") {
+          message = "Invalid email address.";
+        } else if (error.code === "auth/user-disabled") {
+          message = "This account has been disabled.";
+        } else if (error.code === "auth/too-many-requests") {
+          message = "Too many failed attempts. Try again later.";
+        } else if (error.code === "auth/invalid-credential") {
+          message = "Invalid email or password.";
+        }
+
+        setErrorMessage(message);
         setIsSigningIn(false);
       }
     }
   };
 
   // Implement the sign-in with Google
-  const onGoogleSignIn = (e) => {
+  const onGoogleSignIn = async (e) => {
     e.preventDefault();
     console.log("Attempting to sign in with Google");
 
     if (!isSigningIn) {
       setIsSigningIn(true);
-      setErrorMessage(""); // Clear previous errors
+      setErrorMessage("");
 
-      doSignInWithGoogle()
-        .then((result) => {
-          console.log("Google sign-in successful!", result);
-        })
-        .catch((err) => {
-          console.error("Google sign-in failed:", err);
-          console.error("Error message:", err.message);
-          console.error("Error code:", err.code);
-          setErrorMessage(err.message || "Failed to sign in with Google.");
-          setIsSigningIn(false);
-        });
+      try {
+        await doSignInWithGoogle();
+      } catch (error) {
+        let message = "Failed to sign in with Google.";
+
+        if (error.code === "auth/popup-closed-by-user") {
+          message = "Sign-in cancelled.";
+        } else if (
+          error.code === "auth/account-exists-with-different-credential"
+        ) {
+          message =
+            "An account already exists with this email using a different sign-in method.";
+        }
+
+        setErrorMessage(message);
+        setIsSigningIn(false);
+      }
     }
   };
 

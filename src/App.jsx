@@ -2,7 +2,7 @@ import SubscriptionCard from "./components/SubscriptionCard";
 import "./App.css";
 import RegisterPage from "./components/auth/register/RegisterPage";
 import LoginPage from "./components/auth/login/LoginPage";
-import { useAuth } from "./contexts/authContext";
+import HomePage from "./HomePage";
 
 function App() {
   // const [subscriptions, setSubscriptions] = useState([
@@ -47,9 +47,11 @@ function App() {
     //   </div>
     // </div>
     // <RegisterPage />
-    <>
-      <LoginPage />
-    </>
+    // <>
+    //   <LoginPage />
+    // </>
+    // <RegisterPage />
+    <HomePage />
   );
 }
 
